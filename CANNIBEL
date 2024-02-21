@@ -1,0 +1,75 @@
+from collections import deque
+
+# State representation: (left_missionaries, left_cannibals, boat_position)
+# Initial state: (3, 3, 1) (all missionaries and cannibals on the left bank)
+# Goal state: (0, 0, 0) (all missionaries and cannibals on the right bank)
+# Action: (num_missionaries, num_cannibals) to move from one side to another
+
+def is_valid_state(state):
+    missionaries, cannibals, _ = state
+    if missionaries < 0 or cannibals < 0 or missionaries > 3 or cannibals > 3:
+        return False
+    return missionaries == 0 or missionaries >= cannibals
+
+def get_valid_actions(state):
+    actions = []
+    boat_position = state[2]
+    for i in range(3):
+        for j in range(3):
+            if 1 <= i + j <= 2:
+                if boat_position == 1:
+                    actions.append((i, j))
+                else:
+                    actions.append((-i, -j))
+    return actions
+
+def apply_action(state, action):
+    missionaries, cannibals, boat_position = state
+    if boat_position == 1:
+        missionaries -= action[0]
+        cannibals -= action[1]
+        boat_position = 0
+    else:
+        missionaries += action[0]
+        cannibals += action[1]
+        boat_position = 1
+    return missionaries, cannibals, boat_position
+
+def solve_missionaries_cannibals():
+    start_state = (3, 3, 1)
+    goal_state = (0, 0, 0)
+
+    if not is_valid_state(start_state) or not is_valid_state(goal_state):
+        print("Invalid start or goal state.")
+        return None
+
+    visited = set()
+    queue = deque([(start_state, [])])
+
+    while queue:
+        current_state, actions = queue.popleft()
+        if current_state == goal_state:
+            return actions
+
+        if current_state not in visited:
+            visited.add(current_state)
+
+            for action in get_valid_actions(current_state):
+                new_state = apply_action(current_state, action)
+                if is_valid_state(new_state):
+                    new_actions = actions + [action]
+                    queue.append((new_state, new_actions))
+
+    return None
+
+def print_solution(solution):
+    if solution:
+        print("Solution found!")
+        for i, action in enumerate(solution):
+            print(f"Step {i+1}: Move {action[0]} missionaries and {action[1]} cannibals.")
+    else:
+        print("No solution found.")
+
+if __name__ == "__main__":
+    solution = solve_missionaries_cannibals()
+    print_solution(solution)
