@@ -1,0 +1,78 @@
+from collections import deque
+
+# State representation: (x, y) where x is the amount of water in jug A and y is the amount of water in jug B
+# Initial state: (0, 0)
+# Goal state: (c, 0) or (0, c)
+# Action: Fill jug A, Fill jug B, Empty jug A, Empty jug B, Pour from A to B, Pour from B to A
+
+def pour(jug1, jug2, capacity1, capacity2):
+    """
+    Pour from jug1 to jug2
+    :param jug1: amount of water in jug1
+    :param jug2: amount of water in jug2
+    :param capacity1: capacity of jug1
+    :param capacity2: capacity of jug2
+    :return: tuple of new amount of water in jug1 and jug2
+    """
+    space_left_in_jug2 = capacity2 - jug2
+    if jug1 <= space_left_in_jug2:
+        jug2 += jug1
+        jug1 = 0
+    else:
+        jug1 -= space_left_in_jug2
+        jug2 = capacity2
+    return jug1, jug2
+
+def water_jug_problem(capacity_a, capacity_b, target):
+    visited = set()
+    queue = deque([(0, 0)])
+
+    while queue:
+        jug_a, jug_b = queue.popleft()
+        if jug_a == target or jug_b == target:
+            return True
+
+        visited.add((jug_a, jug_b))
+
+        # Fill jug A
+        if (capacity_a, jug_b) not in visited:
+            queue.append((capacity_a, jug_b))
+            visited.add((capacity_a, jug_b))
+
+        # Fill jug B
+        if (jug_a, capacity_b) not in visited:
+            queue.append((jug_a, capacity_b))
+            visited.add((jug_a, capacity_b))
+
+        # Empty jug A
+        if (0, jug_b) not in visited:
+            queue.append((0, jug_b))
+            visited.add((0, jug_b))
+
+        # Empty jug B
+        if (jug_a, 0) not in visited:
+            queue.append((jug_a, 0))
+            visited.add((jug_a, 0))
+
+        # Pour from A to B
+        new_jug_a, new_jug_b = pour(jug_a, jug_b, capacity_a, capacity_b)
+        if (new_jug_a, new_jug_b) not in visited:
+            queue.append((new_jug_a, new_jug_b))
+            visited.add((new_jug_a, new_jug_b))
+
+        # Pour from B to A
+        new_jug_b, new_jug_a = pour(jug_b, jug_a, capacity_b, capacity_a)
+        if (new_jug_a, new_jug_b) not in visited:
+            queue.append((new_jug_a, new_jug_b))
+            visited.add((new_jug_a, new_jug_b))
+
+    return False
+
+if __name__ == "__main__":
+    capacity_a = 4
+    capacity_b = 3
+    target = 2
+    if water_jug_problem(capacity_a, capacity_b, target):
+        print(f"{target} liters of water can be measured using jugs with capacities {capacity_a} and {capacity_b}.")
+    else:
+        print(f"{target} liters of water cannot be measured using jugs with capacities {capacity_a} and {capacity_b}.")
