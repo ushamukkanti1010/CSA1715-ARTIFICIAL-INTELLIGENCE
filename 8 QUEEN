@@ -1,0 +1,57 @@
+def is_safe(board, row, col):
+    # Check if there is a queen in the same column
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
+
+    # Check upper diagonal on left side
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    # Check upper diagonal on right side
+    for i, j in zip(range(row, -1, -1), range(col, len(board))):
+        if board[i][j] == 1:
+            return False
+
+    return True
+
+def solve_queens_util(board, row):
+    n = len(board)
+    # Base case: If all queens are placed, return True
+    if row == n:
+        return True
+
+    for col in range(n):
+        if is_safe(board, row, col):
+            # Place queen if it's safe
+            board[row][col] = 1
+
+            # Recur to place rest of the queens
+            if solve_queens_util(board, row + 1):
+                return True
+
+            # If placing queen at board[row][col] doesn't lead to a solution,
+            # then remove the queen from board[row][col]
+            board[row][col] = 0
+
+    # If queen can not be placed in any column in this row, then return False
+    return False
+
+def solve_queens():
+    n = 8  # Number of queens (8x8 chessboard)
+    board = [[0] * n for _ in range(n)]
+
+    if not solve_queens_util(board, 0):
+        print("Solution does not exist")
+        return False
+
+    print_board(board)
+    return True
+
+def print_board(board):
+    for row in board:
+        print(" ".join(map(str, row)))
+
+if __name__ == "__main__":
+    solve_queens()
