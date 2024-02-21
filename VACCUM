@@ -1,0 +1,55 @@
+class VacuumCleaner:
+    def __init__(self, grid):
+        self.grid = grid
+        self.position = (0, 0)  # Initial position of the vacuum cleaner
+
+    def move_left(self):
+        self.position = (self.position[0], max(0, self.position[1] - 1))
+
+    def move_right(self):
+        self.position = (self.position[0], min(len(self.grid[0]) - 1, self.position[1] + 1))
+
+    def move_up(self):
+        self.position = (max(0, self.position[0] - 1), self.position[1])
+
+    def move_down(self):
+        self.position = (min(len(self.grid) - 1, self.position[0] + 1), self.position[1])
+
+    def clean(self):
+        x, y = self.position
+        self.grid[x][y] = 0  # Mark the cell as clean
+
+    def print_grid(self):
+        for row in self.grid:
+            print(" ".join(str(cell) for cell in row))
+
+def clean_room(vacuum):
+    while any(1 in row for row in vacuum.grid):
+        x, y = vacuum.position
+        if vacuum.grid[x][y] == 1:
+            vacuum.clean()
+        if y > 0:
+            vacuum.move_left()
+        elif y == 0 and x < len(vacuum.grid) - 1:
+            vacuum.move_down()
+        elif y == 0 and x == len(vacuum.grid) - 1:
+            vacuum.move_right()
+        elif y == len(vacuum.grid[0]) - 1 and x < len(vacuum.grid) - 1:
+            vacuum.move_down()
+        elif y < len(vacuum.grid[0]) - 1:
+            vacuum.move_right()
+        elif y == len(vacuum.grid[0]) - 1 and x == len(vacuum.grid) - 1:
+            vacuum.move_up()
+    print("Room cleaned successfully!")
+    vacuum.print_grid()
+
+if __name__ == "__main__":
+    # Example grid representing the room with 1s indicating dirty cells
+    room_grid = [
+        [1, 0, 1, 1],
+        [0, 1, 0, 1],
+        [1, 0, 1, 0],
+        [1, 1, 1, 1]
+    ]
+    vacuum = VacuumCleaner(room_grid)
+    clean_room(vacuum)
