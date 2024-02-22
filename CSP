@@ -1,0 +1,48 @@
+class MapColoring:
+    def __init__(self, graph, colors):
+        self.graph = graph
+        self.colors = colors
+        self.solution = {}
+
+    def is_safe(self, region, color):
+        for neighbor in self.graph[region]:
+            if neighbor in self.solution and self.solution[neighbor] == color:
+                return False
+        return True
+
+    def solve(self, region):
+        if region not in self.graph:
+            return True
+
+        for color in self.colors:
+            if self.is_safe(region, color):
+                self.solution[region] = color
+                if self.solve(next_region(region)):
+                    return True
+                self.solution.pop(region)
+
+        return False
+
+def next_region(region):
+    # This function returns the next region to be colored
+    pass
+
+if __name__ == "__main__":
+    # Example graph represented as an adjacency list
+    graph = {
+        'WA': ['NT', 'SA'],
+        'NT': ['WA', 'SA', 'Q'],
+        'SA': ['WA', 'NT', 'Q', 'NSW', 'V'],
+        'Q': ['NT', 'SA', 'NSW'],
+        'NSW': ['Q', 'SA', 'V'],
+        'V': ['SA', 'NSW']
+    }
+
+    colors = ['Red', 'Green', 'Blue']
+
+    map_coloring = MapColoring(graph, colors)
+    if map_coloring.solve('WA'):
+        print("Solution found:")
+        print(map_coloring.solution)
+    else:
+        print("No solution found.")
