@@ -1,0 +1,61 @@
+import heapq
+
+class Graph:
+    def __init__(self):
+        self.edges = {}
+
+    def add_edge(self, node1, node2, weight):
+        self.edges.setdefault(node1, []).append((node2, weight))
+        self.edges.setdefault(node2, []).append((node1, weight))
+
+    def heuristic(self, node, goal):
+        # This heuristic function returns the Euclidean distance between two nodes
+        x1, y1 = node
+        x2, y2 = goal
+        return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+
+    def a_star(self, start, goal):
+        frontier = [(0, start)]
+        came_from = {}
+        cost_so_far = {start: 0}
+
+        while frontier:
+            current_cost, current_node = heapq.heappop(frontier)
+
+            if current_node == goal:
+                path = []
+                while current_node in came_from:
+                    path.append(current_node)
+                    current_node = came_from[current_node]
+                path.append(start)
+                path.reverse()
+                return path
+
+            for neighbor, weight in self.edges[current_node]:
+                new_cost = cost_so_far[current_node] + weight
+                if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
+                    cost_so_far[neighbor] = new_cost
+                    priority = new_cost + self.heuristic(neighbor, goal)
+                    heapq.heappush(frontier, (priority, neighbor))
+                    came_from[neighbor] = current_node
+
+        return None
+
+if __name__ == "__main__":
+    graph = Graph()
+    graph.add_edge((0, 0), (1, 0), 1)
+    graph.add_edge((1, 0), (1, 1), 1)
+    graph.add_edge((1, 1), (2, 1), 1)
+    graph.add_edge((2, 1), (2, 2), 1)
+    graph.add_edge((2, 2), (3, 2), 1)
+    graph.add_edge((3, 2), (3, 3), 1)
+
+    start = (0, 0)
+    goal = (3, 3)
+
+    path = graph.a_star(start, goal)
+
+    if path:
+        print("Shortest Path:", path)
+    else:
+        print("No path found.")
