@@ -1,0 +1,70 @@
+import numpy as np
+
+class NeuralNetwork:
+    def __init__(self, layers):
+        self.layers = layers
+        self.weights = [np.random.randn(y, x) for x, y in zip(layers[:-1], layers[1:])]
+        self.biases = [np.random.randn(y, 1) for y in layers[1:]]
+
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
+
+    def sigmoid_derivative(self, z):
+        return self.sigmoid(z) * (1 - self.sigmoid(z))
+
+    def feedforward(self, a):
+        for w, b in zip(self.weights, self.biases):
+            a = self.sigmoid(np.dot(w, a) + b)
+        return a
+
+    def train(self, X, y, learning_rate, epochs):
+        for epoch in range(epochs):
+            nabla_w = [np.zeros(w.shape) for w in self.weights]
+            nabla_b = [np.zeros(b.shape) for b in self.biases]
+            for x, y_target in zip(X, y):
+                delta_nabla_w, delta_nabla_b = self.backpropagation(x.reshape(-1, 1), y_target.reshape(-1, 1))
+                nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+                nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+            self.weights = [w - (learning_rate / len(X)) * nw for w, nw in zip(self.weights, nabla_w)]
+            self.biases = [b - (learning_rate / len(X)) * nb for b, nb in zip(self.biases, nabla_b)]
+
+    def backpropagation(self, x, y):
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        nabla_b = [np.zeros(b.shape) for b in self.biases]
+
+        # Feedforward
+        activations = [x]
+        zs = []
+        for w, b in zip(self.weights, self.biases):
+            z = np.dot(w, activations[-1]) + b
+            zs.append(z)
+            activations.append(self.sigmoid(z))
+
+        # Backward pass
+        delta = self.cost_derivative(activations[-1], y) * self.sigmoid_derivative(zs[-1])
+        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+        nabla_b[-1] = delta
+        for l in range(2, len(self.layers)):
+            z = zs[-l]
+            sp = self.sigmoid_derivative(z)
+            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+            nabla_b[-l] = delta
+        return nabla_w, nabla_b
+
+    def cost_derivative(self, output_activations, y):
+        return output_activations - y
+
+if __name__ == "__main__":
+    # Example dataset (XOR problem)
+    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    y = np.array([[0], [1], [1], [0]])
+
+    # Create and train the neural network
+    model = NeuralNetwork([2, 4, 1])
+    model.train(X, y, learning_rate=0.1, epochs=10000)
+
+    # Make predictions
+    predictions = model.feedforward(X.T)
+    print("Predictions:")
+    print(predictions)
